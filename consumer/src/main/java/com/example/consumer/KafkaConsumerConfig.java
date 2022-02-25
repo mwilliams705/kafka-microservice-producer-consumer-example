@@ -29,6 +29,7 @@ public class KafkaConsumerConfig {
     public Map<String, Object> consumerConfig(){
         HashMap<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,BootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,"example");
         return props;
     }
 

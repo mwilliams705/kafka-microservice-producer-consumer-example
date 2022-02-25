@@ -7,6 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/v1/customer")
@@ -30,14 +31,22 @@ public class CustomerController {
     public String addToInactive(@PathVariable Long idToDeactivate){
         
 //        TODO: Figure out LazyLoad Error causing kafka to throw exception 
-        final Customer c = repository.getById(idToDeactivate);
-        if (c.isActive()){
-            c.setActive(false);
-            repository.save(c);
-            kafkaCustomerTemplate.send("toInactiveCustomers", c);
-            return c.toString() + " sent!";
-        }
-        return "Customer already inactive";
+         Optional<Customer> o = repository.findById(idToDeactivate);
+         if (o.isPresent()){
+             System.out.println(o.get().getFirstName());
+             Customer c = o.get();
+
+             if (c.isActive()){
+                 c.setActive(false);
+                 repository.save(c);
+
+                 kafkaCustomerTemplate.send("toInactiveCustomers", new Customer(c.getCustomerId(),c.getFirstName(),c.getLastName(),c.isActive()));
+                 return c.getCustomerId() + " sent!";
+             }
+             return "Customer already inactive";
+         }
+        return "No Customer Found";
+
         
     }
 }
